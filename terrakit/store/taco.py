@@ -153,9 +153,17 @@ class TacoCls:
         """Create a taco dataset from all matching data and label files in a directory."""
         data_label_dir: Path = Path(working_dir)
 
-        resolved_save_dir = save_dir if save_dir is not None else self.save_dir
-        output_path = Path(resolved_save_dir) / f"{dataset_name}.tacozip"
-        logger.info(f"Creating tortilla dataset {dataset_name} in {str(output_path)}")
+        resolved_save_dir = (
+            Path(save_dir) if save_dir is not None else Path(self.save_dir)
+        )
+        output_path = (
+            Path(self.tortilla_name)
+            if self.tortilla_name
+            else Path(f"{dataset_name}.tacozip")
+        )
+        if not output_path.is_absolute():
+            output_path = resolved_save_dir / output_path
+        output_path = output_path.with_suffix(".tacozip")
 
         file_pairs: List[Tuple[Path, Path]] = self._find_file_pairs(
             directory=data_label_dir, data_suffix=chip_suffix, label_suffix=label_suffix

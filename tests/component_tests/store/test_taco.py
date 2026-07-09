@@ -292,8 +292,8 @@ class TestTacoStoreData:
         )
 
         assert os.path.exists(result)
-        # The implementation uses dataset_name for the output filename
-        assert "custom_test.tacozip" in os.listdir(WORKING_DIR)
+        # The implementation uses tortilla_name when provided
+        assert "custom.tacozip" in os.listdir(WORKING_DIR)
 
     def test_taco_store_data_validates_pipeline_model(self, taco_setup, store_cleanup):
         """Test taco_store_data validates pipeline model"""
@@ -608,10 +608,8 @@ class TestTortillaNameDefaultBehavior:
             save_dir=WORKING_DIR,
         )
 
-        # Should use the custom name, not dataset_name
-        # Note: The current implementation uses dataset_name in the path
-        # This test documents the actual behavior
-        assert "my_dataset.tacozip" in result
+        # Should use the custom tortilla_name, not dataset_name
+        assert Path(result) == Path(WORKING_DIR) / "custom_name.tacozip"
         assert os.path.exists(result)
 
     def test_taco_store_data_default_tortilla_name(self, taco_setup, store_cleanup):
@@ -638,8 +636,8 @@ class TestTortillaNameDefaultBehavior:
             tortilla_name="custom_output.tacozip",
         )
 
-        # Should create file with dataset_name (current implementation)
-        assert "test_custom.tacozip" in result
+        # Should create file with custom tortilla_name
+        assert Path(result) == Path(WORKING_DIR) / "custom_output.tacozip"
         assert os.path.exists(result)
 
 
