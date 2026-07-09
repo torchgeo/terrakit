@@ -163,6 +163,7 @@ assert len(res) > 0
 taco_store_data(
     dataset_name=DATASET_NAME,
     working_dir=WORKING_DIR,
+    license="CC-BY 4.0",
     save_dir=WORKING_DIR,
 )
 assert f"{DATASET_NAME}.tacozip" in os.listdir(WORKING_DIR)

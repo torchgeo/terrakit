@@ -24,7 +24,8 @@ chip:
 
 store:
   active: True
-  tortilla_name: "terrakit_curated_tortilla"
+  tortilla_name: "terrakit_curated_tortilla.tacozip"
+  license: "CC-BY 4.0"
   
 upload: # Not yet implemented
 

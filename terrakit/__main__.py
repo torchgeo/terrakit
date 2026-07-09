@@ -90,7 +90,8 @@ def main() -> None:
     elif cfg.subcommand == "store":
         taco_store_data(
             cfg.dataset_name,
-            cfg.working_dir,
+            working_dir=cfg.working_dir,
+            license=cfg.store.license,
             active=cfg.store.active,
             format=cfg.store.format,
             save_dir=cfg.store.save_dir,
