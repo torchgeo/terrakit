@@ -179,7 +179,7 @@ class TacoCls:
         extents: list[Any] = []
 
         for data_path, label_path in file_pairs:
-            print(data_path)
+            logger.debug("Processing data file: %s", data_path)
             # Create unique sample IDs based on filenames
             data_id = data_path.name  # Removes .data.tif
             label_id = label_path.name  # Removes .label.tif
