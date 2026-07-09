@@ -68,7 +68,7 @@ class StoreModel(BaseModel):
         return v
 
     @field_validator("tortilla_name", mode="after")
-    def validate_tortilla_name(cls, v: str, info: ValidationInfo) -> str:
+    def validate_tortilla_name(cls, v: str, _info: ValidationInfo) -> str:
         """
         Validates that tortilla_name ends with .tacozip if provided.
 

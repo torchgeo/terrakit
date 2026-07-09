@@ -106,7 +106,7 @@ class TacoCls:
     ) -> List[Tuple[Path, Path]]:
         """Find all matching .data.tif and .label.tif file pairs in a directory."""
         data_files: list[Path] = sorted(directory.glob("*" + data_suffix))
-        pairs: list[Any] = []
+        pairs: list[Tuple[Path, Path]] = []
 
         for data_file in data_files:
             # Extract the base name by removing .data.tif suffix
@@ -116,7 +116,12 @@ class TacoCls:
             if label_file.exists():
                 pairs.append((data_file, label_file))
             else:
-                print(f"Warning: No matching label file found for {data_file.name}")
+                logger.warning(
+                    f"Warning: No matching label file found for {data_file.name}"
+                )
+                raise TerrakitValidationError(
+                    f"No matching label files found for {data_file.name}"
+                )
 
         return pairs
 
@@ -212,9 +217,6 @@ class TacoCls:
             # Collect extent for this pair
             extents.append(self._build_extent(data_path))
 
-        # logger.info(f"Creating taco from samples: {', '.join(s.path for s in samples)}")
-        print(samples[0])
-        Tortilla(samples=samples)
         # Combine extents from all samples
         combined_extent = self._combine_extents(extents)
 
@@ -308,7 +310,7 @@ def taco_store_data(
 
 
 def load_taco(tortilla_name):
-    """Load a taco dataset and return it as a dataframe.
+    """Load a taco dataset and return the loaded dataset object.
 
     Args:
         tortilla_name: Path to the taco dataset file
