@@ -86,7 +86,7 @@
       "B02"
     ],
     "resolution_m": 10,
-    "query_template": "Template(\"\"\" //VERSION=3 \\n function setup() { return { input: [{ bands: ${bands}, units: \"DN\" }], output: { bands: ${num_bands}, sampleType: \"INT16\" } }; } function evaluatePixel(sample) { return ${band_samples}; } \"\"\")",
+    "query_template": " //VERSION=3 \\n function setup() { return { input: [{ bands: ${bands}, units: \"DN\" }], output: { bands: ${num_bands}, sampleType: \"INT16\" } }; } function evaluatePixel(sample) { return ${band_samples}; } ",
     "collection_name": "s2_l1c",
     "modality_tag": "S2L1C",
     "data_collection": "DataCollection.SENTINEL2_L1C",
@@ -111,7 +111,7 @@
     },
     "connector": "sentinelhub",
     "resolution_m": null,
-    "query_template": "Template(\"\"\" //VERSION=3 \\n\nfunction setup() { return { input: [\"DEM\"], output:{ id: \"default\", bands: 1, sampleType: SampleType.FLOAT32 } } }\nfunction evaluatePixel(sample) { return [sample.DEM] } \"\"\")",
+    "query_template": " //VERSION=3 \\n\nfunction setup() { return { input: [\"DEM\"], output:{ id: \"default\", bands: 1, sampleType: SampleType.FLOAT32 } } }\nfunction evaluatePixel(sample) { return [sample.DEM] } ",
     "collection_name": "dem",
     "modality_tag": "DEM",
     "data_collection": "DataCollection.DEM_COPERNICUS_30",
@@ -151,7 +151,7 @@
     "connector": "sentinelhub",
     "modality_tag": "S1GRD",
     "resolution_m": 10,
-    "query_template": "Template(\"\"\" //VERSION=3 \\n function setup() { return { input: [{ bands: ${bands}, units: \"LINEAR_POWER\" }], output: { bands: ${num_bands}, sampleType: \"FLOAT32\" } }; }\nfunction evaluatePixel(sample) { return ${band_samples}; } \"\"\")",
+    "query_template": " //VERSION=3 \\n function setup() { return { input: [{ bands: ${bands}, units: \"LINEAR_POWER\" }], output: { bands: ${num_bands}, sampleType: \"FLOAT32\" } }; }\nfunction evaluatePixel(sample) { return ${band_samples}; } ",
     "collection_name": "s1_grd",
     "data_collection": "DataCollection.SENTINEL1_IW",
     "request_input_data": {
@@ -241,7 +241,7 @@
       "band": "SCL",
       "encoding": "sentinel2_lulc"
     },
-    "query_template": "Template(\"\"\" //VERSION=3 \\n function setup() { return { input: [{ bands: ${bands}, units: \"DN\" }], output: { bands: ${num_bands}, sampleType: \"INT16\" } }; } function evaluatePixel(sample) { return ${band_samples}; } \"\"\")",
+    "query_template": " //VERSION=3 \\n function setup() { return { input: [{ bands: ${bands}, units: \"DN\" }], output: { bands: ${num_bands}, sampleType: \"INT16\" } }; } function evaluatePixel(sample) { return ${band_samples}; } ",
     "collection_name": "hls_l30",
     "data_collection": "DataCollection.HARMONIZED_LANDSAT_SENTINEL",
     "request_input_data": {
@@ -352,7 +352,7 @@
       "band": "SCL",
       "encoding": "sentinel2_lulc"
     },
-    "query_template": "Template(\"\"\" //VERSION=3 \\n function setup() { return { input: [{ bands: ${bands}, units: \"DN\" }], output: { bands: ${num_bands}, sampleType: \"INT16\" } }; } function evaluatePixel(sample) { return ${band_samples}; } \"\"\")",
+    "query_template": " //VERSION=3 \\n function setup() { return { input: [{ bands: ${bands}, units: \"DN\" }], output: { bands: ${num_bands}, sampleType: \"INT16\" } }; } function evaluatePixel(sample) { return ${band_samples}; } ",
     "collection_name": "s2_l2a",
     "data_collection": "DataCollection.SENTINEL2_L2A",
     "request_input_data": {
@@ -458,7 +458,7 @@
       "band": "SCL",
       "encoding": "sentinel2_lulc"
     },
-    "query_template": "Template(\"\"\" //VERSION=3 function setup() { return { input: [{ bands: ${bands}, units: \"DN\" }], output: { bands: ${num_bands}, sampleType: \"INT16\" } }; } function evaluatePixel(sample) { return ${band_samples}; } \"\"\")",
+    "query_template": " //VERSION=3 function setup() { return { input: [{ bands: ${bands}, units: \"DN\" }], output: { bands: ${num_bands}, sampleType: \"INT16\" } }; } function evaluatePixel(sample) { return ${band_samples}; } ",
     "collection_name": "hls_s30",
     "data_collection": "DataCollection.HARMONIZED_LANDSAT_SENTINEL",
     "request_input_data": {
