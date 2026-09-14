@@ -23,6 +23,7 @@ from sentinelhub import (
     bbox_to_dimensions,
 )
 from pathlib import Path
+from rasterio.warp import calculate_default_transform, reproject, Resampling
 from shapely.geometry import shape
 from typing import Any, Dict, Union
 
@@ -328,22 +329,49 @@ def verify_input_image(image, standard_dimensions=224) -> typing.Tuple[int, str]
         return 200, str(image_input_dimensions)
 
 
-def check_projection(file):
+def check_projection(file: Union[str, Path]) -> None:
     """
-    Check the projection is correct, if not reproject to EPSG:4326
+    Check the projection is correct, if not reproject to EPSG:4326.
 
     Parameters:
-        file (str): The path to the input file.
-
-    Returns:
-        None
+        file (str | Path): The path to the input file.
     """
-    res = os.popen(f"gdalinfo {file} -proj4 -json").read()
-    res_json = json.loads(res)
-    # WGS84 is the same as EPSG:4326
-    if res_json["stac"]["proj:epsg"] != 4326:
-        os.system(f"gdalwarp {file} -t_srs EPSG:4326 {file}_reprojected.tif")
-        os.system(f"mv {file}_reprojected.tif {file} ")
+    file_path = Path(file)
+    target_crs = CRS.from_epsg(4326)
+
+    with rasterio.open(file_path) as src:
+        # Check if already in EPSG:4326
+        if src.crs == target_crs or (src.crs and src.crs.to_epsg() == 4326):
+            return
+
+        transform, width, height = calculate_default_transform(
+            src.crs, target_crs, src.width, src.height, *src.bounds
+        )
+        kwargs = src.meta.copy()
+        kwargs.update(
+            {
+                "crs": target_crs,
+                "transform": transform,
+                "width": width,
+                "height": height,
+            }
+        )
+
+        temp_file = file_path.with_name(f"{file_path.stem}_reprojected.tif")
+        with rasterio.open(temp_file, "w", **kwargs) as dst:
+            for i in range(1, src.count + 1):
+                reproject(
+                    source=rasterio.band(src, i),
+                    destination=rasterio.band(dst, i),
+                    src_transform=src.transform,
+                    src_crs=src.crs,
+                    dst_transform=transform,
+                    dst_crs=target_crs,
+                    resampling=Resampling.nearest,
+                )
+
+    # Atomically replace original file with reprojected file
+    temp_file.replace(file_path)
 
 
 def pad_bbox(padding_degrees, bbox):
