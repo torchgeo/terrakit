@@ -245,6 +245,7 @@ class TestLabels_Classes:
         )
 
 
+@pytest.mark.usefixtures("overlapping_geometries_working_dir")
 class TestOverlappingGeometries:
     """Test that non-overlapping geometries are grouped separately with tile suffixes."""
 
@@ -265,7 +266,7 @@ class TestOverlappingGeometries:
         # Create LabelsCls instance
         labels = LabelsCls(
             dataset_name="test_dataset",
-            working_dir="./tmp_test",
+            working_dir=WORKING_DIR,
             labels_folder="./test_labels",
         )
 
@@ -303,7 +304,7 @@ class TestOverlappingGeometries:
         # Create LabelsCls instance
         labels = LabelsCls(
             dataset_name="test_dataset",
-            working_dir="./tmp_test",
+            working_dir=WORKING_DIR,
             labels_folder="./test_labels",
         )
 
@@ -340,7 +341,7 @@ class TestOverlappingGeometries:
         # Create LabelsCls instance
         labels = LabelsCls(
             dataset_name="test_dataset",
-            working_dir="./tmp_test",
+            working_dir=WORKING_DIR,
             labels_folder="./test_labels",
         )
 
@@ -376,7 +377,7 @@ class TestOverlappingGeometries:
         # Create LabelsCls instance
         labels = LabelsCls(
             dataset_name="test_dataset",
-            working_dir="./tmp_test",
+            working_dir=WORKING_DIR,
             labels_folder="./test_labels",
         )
 

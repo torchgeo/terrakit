@@ -1,4 +1,4 @@
-# © Copyright IBM Corporation 2025
+# © Copyright IBM Corporation 2025-2026
 # SPDX-License-Identifier: Apache-2.0
 
 
@@ -136,6 +136,14 @@ def process_labels_clean_up_working_dir():
     print(f"Test clean up. Deleting {working_dir}")
     if os.path.exists(working_dir):
         shutil.rmtree(working_dir)
+
+
+@pytest.fixture(scope="class")
+def overlapping_geometries_working_dir():
+    Path(WORKING_DIR).mkdir(parents=True, exist_ok=True)
+    yield
+    if os.path.exists(WORKING_DIR):
+        shutil.rmtree(WORKING_DIR)
 
 
 @pytest.fixture
