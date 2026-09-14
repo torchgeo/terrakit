@@ -2,15 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import geopandas as gpd
 import os
 import pandas as pd
 import pytest
 
-from shapely.geometry import box
 from pathlib import Path
 
-from terrakit.transform.labels import LabelsCls
 from terrakit.transform.labels import process_labels
 from tests.component_tests.transform.conftest import (
     DATASET_NAME,
