@@ -2,12 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+import geopandas as gpd
 import os
 import pandas as pd
 import pytest
 
+from shapely.geometry import box
 from pathlib import Path
 
+from terrakit.transform.labels import LabelsCls
 from terrakit.transform.labels import process_labels
 from tests.component_tests.transform.conftest import (
     DATASET_NAME,
@@ -240,3 +243,156 @@ class TestLabels_Classes:
         assert set(grouped_boxes_gdf["labelclass"].values) == {0, 1}, (
             "Both class 0 and 1 should be in grouped boxes"
         )
+
+
+class TestOverlappingGeometries:
+    """Test that non-overlapping geometries are grouped separately with tile suffixes."""
+
+    def test_non_overlapping_geometries_get_separate_tile_suffixes(self):
+        """Test that non-overlapping geometries on the same date get different tile suffixes."""
+        # Create test data with two non-overlapping geometries on the same date
+        test_data = {
+            "datetime": ["2024-01-01", "2024-01-01"],
+            "labelclass": ["fire", "fire"],
+            "filename": ["file1.shp", "file2.shp"],  # Add filename column
+            "geometry": [
+                box(0, 0, 1, 1),  # First bbox
+                box(5, 5, 6, 6),  # Second bbox (non-overlapping)
+            ],
+        }
+        test_gdf = gpd.GeoDataFrame(test_data, crs="EPSG:4326")
+
+        # Create LabelsCls instance
+        labels = LabelsCls(
+            dataset_name="test_dataset",
+            working_dir="./tmp_test",
+            labels_folder="./test_labels",
+        )
+
+        # Get grouped bboxes
+        result_gdf = labels.get_grouped_bbox_gdf(test_gdf)
+
+        # Verify that we have a tilesuffix column
+        assert "tilesuffix" in result_gdf.columns
+
+        # Verify that we have two separate groups (two rows for same date)
+        assert len(result_gdf) == 2
+
+        # Verify that the tile suffixes are different
+        tile_suffixes = result_gdf["tilesuffix"].unique()
+        assert len(tile_suffixes) == 2
+
+        # Verify tile suffix format (e.g. "_tile_0_0_", "_tile_0_1_")
+        for suffix in tile_suffixes:
+            assert suffix.startswith("_tile_")
+
+    def test_overlapping_geometries_get_same_tile_suffix(self):
+        """Test that overlapping geometries on the same date get the same tile suffix."""
+        # Create test data with two overlapping geometries on the same date
+        test_data = {
+            "datetime": ["2024-01-01", "2024-01-01"],
+            "labelclass": ["fire", "smoke"],
+            "filename": ["file1.shp", "file1.shp"],  # Add filename column (same file)
+            "geometry": [
+                box(0, 0, 2, 2),  # First bbox
+                box(1, 1, 3, 3),  # Second bbox (overlapping)
+            ],
+        }
+        test_gdf = gpd.GeoDataFrame(test_data, crs="EPSG:4326")
+
+        # Create LabelsCls instance
+        labels = LabelsCls(
+            dataset_name="test_dataset",
+            working_dir="./tmp_test",
+            labels_folder="./test_labels",
+        )
+
+        # Get grouped bboxes
+        result_gdf = labels.get_grouped_bbox_gdf(test_gdf)
+
+        # Verify that we have a tile_suffix column
+        assert "tilesuffix" in result_gdf.columns
+
+        # Verify that we have two rows (one per class) but same tile suffix
+        assert len(result_gdf) == 2
+
+        # Verify that both have the same tile suffix
+        tile_suffixes = result_gdf["tilesuffix"].unique()
+        assert len(tile_suffixes) == 1
+
+    def test_mixed_overlapping_and_non_overlapping_geometries(self):
+        """Test mixed scenario with both overlapping and non-overlapping geometries."""
+        # Create test data:
+        # - Geometries 0 and 1 overlap (group 1)
+        # - Geometry 2 is separate (group 2)
+        test_data = {
+            "datetime": ["2024-01-01", "2024-01-01", "2024-01-01"],
+            "labelclass": ["fire", "smoke", "fire"],
+            "filename": ["file1.shp", "file1.shp", "file2.shp"],  # Add filename column
+            "geometry": [
+                box(0, 0, 2, 2),  # Overlaps with geometry 1
+                box(1, 1, 3, 3),  # Overlaps with geometry 0
+                box(10, 10, 12, 12),  # Separate
+            ],
+        }
+        test_gdf = gpd.GeoDataFrame(test_data, crs="EPSG:4326")
+
+        # Create LabelsCls instance
+        labels = LabelsCls(
+            dataset_name="test_dataset",
+            working_dir="./tmp_test",
+            labels_folder="./test_labels",
+        )
+
+        # Get grouped bboxes
+        result_gdf = labels.get_grouped_bbox_gdf(test_gdf)
+
+        # Verify that we have a tile_suffix column
+        assert "tilesuffix" in result_gdf.columns
+
+        # Verify that we have 3 rows (one per class)
+        assert len(result_gdf) == 3
+
+        # Verify that we have exactly 2 different tile suffixes
+        tile_suffixes = result_gdf["tilesuffix"].unique()
+        assert len(tile_suffixes) == 2
+
+    def test_different_dates_get_independent_tile_suffixes(self):
+        """Test that different dates are processed independently."""
+        # Create test data with non-overlapping geometries on different dates
+        test_data = {
+            "datetime": ["2024-01-01", "2024-01-02"],
+            "labelclass": ["fire", "fire"],
+            "filename": ["file1.shp", "file2.shp"],  # Add filename column
+            "geometry": [
+                box(0, 0, 1, 1),  # Date 1
+                box(
+                    5, 5, 6, 6
+                ),  # Date 2 (same position as would be non-overlapping on date 1)
+            ],
+        }
+        test_gdf = gpd.GeoDataFrame(test_data, crs="EPSG:4326")
+
+        # Create LabelsCls instance
+        labels = LabelsCls(
+            dataset_name="test_dataset",
+            working_dir="./tmp_test",
+            labels_folder="./test_labels",
+        )
+
+        # Get grouped bboxes
+        result_gdf = labels.get_grouped_bbox_gdf(test_gdf)
+
+        # Verify that we have a tile_suffix column
+        assert "tilesuffix" in result_gdf.columns
+
+        # Verify that we have 2 rows (one per date)
+        assert len(result_gdf) == 2
+
+        # Each date should have its own tile suffix
+        # Format: _tile_YYYYMMDD_M_N_ where M is date index (0, 1, 2...) and N is subgroup index (1, 2, 3...)
+        date1_row = result_gdf[result_gdf["datetime"] == "2024-01-01"].iloc[0]
+        date2_row = result_gdf[result_gdf["datetime"] == "2024-01-02"].iloc[0]
+
+        assert date1_row["tilesuffix"] == "_tile_0_1"
+        assert date2_row["tilesuffix"] == "_tile_1_1"
