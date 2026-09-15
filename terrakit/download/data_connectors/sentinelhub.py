@@ -346,7 +346,12 @@ class SentinelHub(Connector):
             filter_string = ""
 
         if "fields" in data_connector_spec["search"]:
-            fields_dict = json.loads(data_connector_spec["search"]["fields"])
+            fields_str = data_connector_spec["search"]["fields"]
+            if len(fields_str) > 1024:
+                raise TerrakitValidationError(
+                    "search.fields value exceeds maximum allowed length"
+                )
+            fields_dict = json.loads(fields_str)
 
         else:
             fields_dict = {"include": ["id", "properties.datetime"], "exclude": []}
