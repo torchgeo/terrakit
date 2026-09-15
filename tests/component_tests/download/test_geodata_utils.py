@@ -5,6 +5,7 @@
 import numpy as np
 import pytest
 import rasterio
+import rasterio.errors
 import tempfile
 import xarray as xr
 from pathlib import Path
@@ -175,6 +176,3 @@ class TestSaveCog:
             assert descriptions == expected_names, (
                 f"Band descriptions don't match. Expected: {expected_names}, Got: {descriptions}"
             )
-
-
-# Made with Bob
