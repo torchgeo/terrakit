@@ -201,12 +201,7 @@ def get_band(date_items, band, bbox, temp_creds_req, working_dir):
     build_vrt += links
 
     # Execute gdalbuildvrt directly
-    result = subprocess.run(build_vrt, capture_output=True)
-    if result.returncode != 0:
-        raise TerrakitBaseException(
-            f"gdalbuildvrt failed with exit code {result.returncode}",
-            details=result.stderr.decode(),
-        )
+    result = subprocess.run(build_vrt, check=True)
 
     # Define chunking parameters for efficient reading of the VRT
     chunks = dict(band=1, x=512, y=512)
