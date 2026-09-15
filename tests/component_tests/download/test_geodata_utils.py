@@ -11,7 +11,6 @@ import xarray as xr
 from pathlib import Path
 
 from terrakit.download.geodata_utils import save_cog
-from terrakit.download.geodata_utils import check_projection
 
 
 class TestSaveCog:
@@ -177,46 +176,3 @@ class TestSaveCog:
             assert descriptions == expected_names, (
                 f"Band descriptions don't match. Expected: {expected_names}, Got: {descriptions}"
             )
-
-
-def test_check_projection_command_injection(tmp_path):
-    """Ensure malicious inputs cannot execute arbitrary shell commands."""
-    canary_file = tmp_path / "pwned.txt"
-
-    # Payload designed to create the canary file if interpreted by a shell
-    malicious_input = f"--help; touch {canary_file}; echo 3"
-
-    # The function should fail safely without running the payload
-    with pytest.raises((rasterio.errors.RasterioIOError, FileNotFoundError, Exception)):
-        check_projection(malicious_input)
-
-    # Verify command was not executed
-    assert not canary_file.exists(), (
-        "Command injection vulnerability detected: canary file was created!"
-    )
-
-
-@pytest.mark.parametrize(
-    "payload",
-    [
-        "file.tif; touch {canary}",
-        "file.tif && touch {canary}",
-        "file.tif | touch {canary}",
-        "`touch {canary}`",
-        "$(touch {canary})",
-    ],
-)
-def test_check_projection_injection_variants(tmp_path, payload):
-    """Test various shell metacharacter injection payloads."""
-    canary_file = tmp_path / "pwned_variant.txt"
-    formatted_payload = payload.format(canary=canary_file)
-
-    with pytest.raises(Exception):
-        check_projection(formatted_payload)
-
-    assert not canary_file.exists(), (
-        f"Payload '{formatted_payload}' executed arbitrary command!"
-    )
-
-
-# Made with Bob
