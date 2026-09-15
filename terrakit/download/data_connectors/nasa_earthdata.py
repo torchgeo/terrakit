@@ -168,7 +168,7 @@ def get_band(date_items, band, bbox, temp_creds_req, working_dir):
     # Transform the bounding box to the CRS of the first link
     hls_bbox = list(rio.warp.transform_bounds("EPSG:4326", hls_proj, *bbox))
 
-    # Prepare the gdalbuildvrt argument list — never use shell=True with user input
+    # Prepare the gdalbuildvrt argument list
     vrt_path = os.path.join(working_dir, f"links_{band}_{date}.vrt")
     build_vrt = ["gdalbuildvrt", vrt_path, "-separate"]
 
@@ -197,11 +197,16 @@ def get_band(date_items, band, bbox, temp_creds_req, working_dir):
         "TRUE",
     ]
 
-    # Each link is a separate list element — shell metacharacters are never interpreted
+    # Each link is a separate list element
     build_vrt += links
 
-    # Execute gdalbuildvrt directly (no shell involved)
-    subprocess.run(build_vrt)
+    # Execute gdalbuildvrt directly
+    result = subprocess.run(build_vrt, capture_output=True)
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"gdalbuildvrt failed with exit code {result.returncode}:\n"
+            f"{result.stderr.decode()}"
+        )
 
     # Define chunking parameters for efficient reading of the VRT
     chunks = dict(band=1, x=512, y=512)
