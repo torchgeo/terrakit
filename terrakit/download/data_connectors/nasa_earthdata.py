@@ -168,25 +168,46 @@ def get_band(date_items, band, bbox, temp_creds_req, working_dir):
     # Transform the bounding box to the CRS of the first link
     hls_bbox = list(rio.warp.transform_bounds("EPSG:4326", hls_proj, *bbox))
 
-    # Prepare the gdalbuildvrt command based on whether a NASA_EARTH_BEARER_TOKEN is available
+    # Prepare the gdalbuildvrt argument list
+    vrt_path = os.path.join(working_dir, f"links_{band}_{date}.vrt")
+    build_vrt = ["gdalbuildvrt", vrt_path, "-separate"]
+
     if NASA_EARTH_BEARER_TOKEN:
-        build_vrt = f"gdalbuildvrt {working_dir}/links_{band}_{date}.vrt -separate --config GDAL_HTTP_AUTH BEARER --config GDAL_HTTP_BEARER {NASA_EARTH_BEARER_TOKEN} --config AWS_ACCESS_KEY_ID {temp_creds_req['accessKeyId']} --config AWS_SECRET_ACCESS_KEY {temp_creds_req['secretAccessKey']} --config AWS_SESSION_TOKEN {temp_creds_req['sessionToken']} --config GDAL_DISABLE_READDIR_ON_OPEN TRUE"
-    else:
-        build_vrt = f"gdalbuildvrt {working_dir}/links_{band}_{date}.vrt -separate --config AWS_ACCESS_KEY_ID {temp_creds_req['accessKeyId']} --config AWS_SECRET_ACCESS_KEY {temp_creds_req['secretAccessKey']} --config AWS_SESSION_TOKEN {temp_creds_req['sessionToken']} --config GDAL_DISABLE_READDIR_ON_OPEN TRUE"
+        build_vrt += [
+            "--config",
+            "GDAL_HTTP_AUTH",
+            "BEARER",
+            "--config",
+            "GDAL_HTTP_BEARER",
+            NASA_EARTH_BEARER_TOKEN,
+        ]
 
-    # Combine the gdalbuildvrt command with the list of links
-    build_vrt = " ".join([build_vrt] + links)
+    build_vrt += [
+        "--config",
+        "AWS_ACCESS_KEY_ID",
+        temp_creds_req["accessKeyId"],
+        "--config",
+        "AWS_SECRET_ACCESS_KEY",
+        temp_creds_req["secretAccessKey"],
+        "--config",
+        "AWS_SESSION_TOKEN",
+        temp_creds_req["sessionToken"],
+        "--config",
+        "GDAL_DISABLE_READDIR_ON_OPEN",
+        "TRUE",
+    ]
 
-    # Execute the gdalbuildvrt command using subprocess
-    subprocess.call(build_vrt, shell=True)
+    # Each link is a separate list element
+    build_vrt += links
+
+    # Execute gdalbuildvrt directly
+    result = subprocess.run(build_vrt, check=True)
 
     # Define chunking parameters for efficient reading of the VRT
     chunks = dict(band=1, x=512, y=512)
 
     # Open the VRT file using rioxarray
-    data = rioxarray.open_rasterio(
-        f"{working_dir}/links_{band}_{date}.vrt", chunks=chunks
-    )
+    data = rioxarray.open_rasterio(vrt_path, chunks=chunks)
 
     # Rename the 'band' dimension to 'time' and add a new 'band' dimension
     data = data.rename({"band": "time"})
