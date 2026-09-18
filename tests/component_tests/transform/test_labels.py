@@ -245,12 +245,11 @@ class TestLabels_Classes:
         )
 
 
-@pytest.mark.usefixtures("create_working_dir")
 class TestOverlappingGeometries:
     """Test that non-overlapping geometries are grouped separately with tile suffixes."""
 
     def test_non_overlapping_geometries_get_separate_tile_suffixes(
-        self, clean_up_working_dir_contents
+        self, create_working_dir
     ):
         """Test that non-overlapping geometries on the same date get different tile suffixes."""
         # Create test data with two non-overlapping geometries on the same date
@@ -289,9 +288,7 @@ class TestOverlappingGeometries:
         for suffix in tile_suffixes:
             assert suffix.startswith("_tile_")
 
-    def test_overlapping_geometries_get_same_tile_suffix(
-        self, clean_up_working_dir_contents
-    ):
+    def test_overlapping_geometries_get_same_tile_suffix(self, create_working_dir):
         """Test that overlapping geometries on the same date get the same tile suffix."""
         # Create test data with two overlapping geometries on the same date
         test_data = {
@@ -325,9 +322,7 @@ class TestOverlappingGeometries:
         tile_suffixes = result_gdf["tilesuffix"].unique()
         assert len(tile_suffixes) == 1
 
-    def test_mixed_overlapping_and_non_overlapping_geometries(
-        self, clean_up_working_dir_contents
-    ):
+    def test_mixed_overlapping_and_non_overlapping_geometries(self, create_working_dir):
         """Test mixed scenario with both overlapping and non-overlapping geometries."""
         # Create test data:
         # - Geometries 0 and 1 overlap (group 1)
@@ -364,9 +359,7 @@ class TestOverlappingGeometries:
         tile_suffixes = result_gdf["tilesuffix"].unique()
         assert len(tile_suffixes) == 2
 
-    def test_different_dates_get_independent_tile_suffixes(
-        self, clean_up_working_dir_contents
-    ):
+    def test_different_dates_get_independent_tile_suffixes(self, create_working_dir):
         """Test that different dates are processed independently."""
         # Create test data with non-overlapping geometries on different dates
         test_data = {

@@ -129,23 +129,12 @@ def process_labels_setup_csv_datetime_invalid_date():
     create_metadata_csv_invalid_date()
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture
 def create_working_dir():
     Path(WORKING_DIR).mkdir(parents=True, exist_ok=True)
     yield
     if os.path.exists(WORKING_DIR):
         shutil.rmtree(WORKING_DIR)
-
-
-@pytest.fixture
-def clean_up_working_dir_contents():
-    yield
-    if os.path.exists(WORKING_DIR):
-        for item in Path(WORKING_DIR).iterdir():
-            if item.is_file():
-                item.unlink()
-            elif item.is_dir():
-                shutil.rmtree(item)
 
 
 @pytest.fixture
