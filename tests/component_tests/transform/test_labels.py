@@ -245,10 +245,13 @@ class TestLabels_Classes:
         )
 
 
+@pytest.mark.usefixtures("create_working_dir")
 class TestOverlappingGeometries:
     """Test that non-overlapping geometries are grouped separately with tile suffixes."""
 
-    def test_non_overlapping_geometries_get_separate_tile_suffixes(self):
+    def test_non_overlapping_geometries_get_separate_tile_suffixes(
+        self, clean_up_working_dir_contents
+    ):
         """Test that non-overlapping geometries on the same date get different tile suffixes."""
         # Create test data with two non-overlapping geometries on the same date
         test_data = {
@@ -265,7 +268,7 @@ class TestOverlappingGeometries:
         # Create LabelsCls instance
         labels = LabelsCls(
             dataset_name="test_dataset",
-            working_dir="./tmp_test",
+            working_dir=WORKING_DIR,
             labels_folder="./test_labels",
         )
 
@@ -286,7 +289,9 @@ class TestOverlappingGeometries:
         for suffix in tile_suffixes:
             assert suffix.startswith("_tile_")
 
-    def test_overlapping_geometries_get_same_tile_suffix(self):
+    def test_overlapping_geometries_get_same_tile_suffix(
+        self, clean_up_working_dir_contents
+    ):
         """Test that overlapping geometries on the same date get the same tile suffix."""
         # Create test data with two overlapping geometries on the same date
         test_data = {
@@ -303,7 +308,7 @@ class TestOverlappingGeometries:
         # Create LabelsCls instance
         labels = LabelsCls(
             dataset_name="test_dataset",
-            working_dir="./tmp_test",
+            working_dir=WORKING_DIR,
             labels_folder="./test_labels",
         )
 
@@ -320,7 +325,9 @@ class TestOverlappingGeometries:
         tile_suffixes = result_gdf["tilesuffix"].unique()
         assert len(tile_suffixes) == 1
 
-    def test_mixed_overlapping_and_non_overlapping_geometries(self):
+    def test_mixed_overlapping_and_non_overlapping_geometries(
+        self, clean_up_working_dir_contents
+    ):
         """Test mixed scenario with both overlapping and non-overlapping geometries."""
         # Create test data:
         # - Geometries 0 and 1 overlap (group 1)
@@ -340,7 +347,7 @@ class TestOverlappingGeometries:
         # Create LabelsCls instance
         labels = LabelsCls(
             dataset_name="test_dataset",
-            working_dir="./tmp_test",
+            working_dir=WORKING_DIR,
             labels_folder="./test_labels",
         )
 
@@ -357,7 +364,9 @@ class TestOverlappingGeometries:
         tile_suffixes = result_gdf["tilesuffix"].unique()
         assert len(tile_suffixes) == 2
 
-    def test_different_dates_get_independent_tile_suffixes(self):
+    def test_different_dates_get_independent_tile_suffixes(
+        self, clean_up_working_dir_contents
+    ):
         """Test that different dates are processed independently."""
         # Create test data with non-overlapping geometries on different dates
         test_data = {
@@ -376,7 +385,7 @@ class TestOverlappingGeometries:
         # Create LabelsCls instance
         labels = LabelsCls(
             dataset_name="test_dataset",
-            working_dir="./tmp_test",
+            working_dir=WORKING_DIR,
             labels_folder="./test_labels",
         )
 
