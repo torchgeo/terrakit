@@ -5,6 +5,7 @@
 # Assisted by watsonx Code Assistant
 
 import os
+import json
 import numpy as np
 import xarray as xr
 import rioxarray
@@ -93,7 +94,12 @@ def create_request(
     data_folder="./",
     maxcc=None,
 ):
-    evalscript = eval(data_details["query_template"]).substitute(
+    qt = data_details["query_template"]
+    if not qt.strip().startswith("//VERSION=3"):
+        raise TerrakitValidationError(
+            "Invalid query_template value: does not start with //VERSION=3"
+        )
+    evalscript = Template(qt).substitute(
         {
             "bands": str(bands),
             "num_bands": len(bands),
@@ -101,17 +107,31 @@ def create_request(
         }
     )
 
+    dc_name = data_details["data_collection"]  # e.g. "DataCollection.SENTINEL2_L1C"
+    dc_prefix = "DataCollection."
+    if not dc_name.startswith(dc_prefix):
+        raise TerrakitValidationError(f"Invalid data_collection value: {dc_name!r}")
+    member_name = dc_name[len(dc_prefix) :]
+    data_collection = getattr(DataCollection, member_name)
+
     shr = SentinelHubRequest.input_data(
-        data_collection=eval(data_details["data_collection"]),
+        data_collection=data_collection,
         time_interval=(timestamp_start, timestamp_end),
     )
 
     if maxcc is not None:
         shr["maxCloudCoverage"] = maxcc / 100.0
     if "mosaicking_order" in data_details["request_input_data"]:
-        shr["mosaickingOrder"] = eval(
-            data_details["request_input_data"]["mosaicking_order"]
-        ).value
+        mosaicking_order_name = data_details["request_input_data"][
+            "mosaicking_order"
+        ]  # i.e. "MosaickingOrder.LEAST_CC"
+        mosaicking_order_prefix = "MosaickingOrder."
+        if not mosaicking_order_name.startswith(mosaicking_order_prefix):
+            raise TerrakitValidationError(
+                f"Invalid mosaicking_order value: {mosaicking_order_name!r}"
+            )
+        member_name = mosaicking_order_name[len(mosaicking_order_prefix) :]
+        shr["mosaickingOrder"] = getattr(MosaickingOrder, member_name).value
 
     logger.info(shr)
 
@@ -299,7 +319,14 @@ class SentinelHub(Connector):
                 raise ValueError(error_msg)
             data_connector_spec = data_connector_spec_list[0]
 
-        data_collection = eval(data_connector_spec["data_collection"])
+        dc_name = data_connector_spec[
+            "data_collection"
+        ]  # e.g. "DataCollection.SENTINEL2_L1C"
+        dc_prefix = "DataCollection."
+        if not dc_name.startswith(dc_prefix):
+            raise TerrakitValidationError(f"Invalid data_collection value: {dc_name!r}")
+        member_name = dc_name[len(dc_prefix) :]
+        data_collection = getattr(DataCollection, member_name)
 
         self.sh_config.sh_base_url = data_collection.service_url
         logger.info(self.sh_config.sh_base_url)
@@ -319,7 +346,12 @@ class SentinelHub(Connector):
             filter_string = ""
 
         if "fields" in data_connector_spec["search"]:
-            fields_dict = eval(data_connector_spec["search"]["fields"])
+            fields_str = data_connector_spec["search"]["fields"]
+            if len(fields_str) > 1024:
+                raise TerrakitValidationError(
+                    "search.fields value exceeds maximum allowed length"
+                )
+            fields_dict = json.loads(fields_str)
 
         else:
             fields_dict = {"include": ["id", "properties.datetime"], "exclude": []}
