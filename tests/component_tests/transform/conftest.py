@@ -1,4 +1,4 @@
-# © Copyright IBM Corporation 2025
+# © Copyright IBM Corporation 2025-2026
 # SPDX-License-Identifier: Apache-2.0
 
 
@@ -127,6 +127,14 @@ def process_labels_setup_csv_datetime_invalid_date():
         )
         shutil.copy(file, f"{LABELS_FOLDER_CSV_DATETIME}/{strip_date_filename}")
     create_metadata_csv_invalid_date()
+
+
+@pytest.fixture
+def create_working_dir():
+    Path(WORKING_DIR).mkdir(parents=True, exist_ok=True)
+    yield
+    if os.path.exists(WORKING_DIR):
+        shutil.rmtree(WORKING_DIR)
 
 
 @pytest.fixture
