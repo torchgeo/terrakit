@@ -307,26 +307,30 @@ def verify_input_image(image, standard_dimensions=224) -> typing.Tuple[int, str]
     Return:
         tuple[int, str]: [verification_status_code, verification_msg]
     """
-    res = os.popen(f"gdalinfo {image} -json").read()
-    res_json = json.loads(res)
-    dims = res_json["size"]
+    try:
+        with rasterio.open(image) as src:
+            dims = (src.height, src.width)
 
-    # Check if image is geotiff
-    if res_json["driverShortName"] != "GTiff":
-        return 1007, f"Input {image} is not a GeoTiff."
+            # Check if image is geotiff
+            if src.driver != "GTiff":
+                return 1007, f"Input {image} is not a GeoTiff."
 
-    # Check image dimensions
-    image_input_dimensions = np.min(dims)
+            # Check image dimensions
+            image_input_dimensions = np.min(dims)
 
-    if image_input_dimensions < standard_dimensions:
-        return (
-            1002,
-            f"Input image too small for image {image} with dimensions {image_input_dimensions}. Both dimensions must be >= 224.",
-        )
-    else:
-        # Log/Show dimensions of the input image
-        logger.debug(f"Input image {image} has dimensions {image_input_dimensions}")
-        return 200, str(image_input_dimensions)
+            if image_input_dimensions < standard_dimensions:
+                return (
+                    1002,
+                    f"Input image too small for image {image} with dimensions {image_input_dimensions}. Both dimensions must be >= 224.",
+                )
+            else:
+                # Log/Show dimensions of the input image
+                logger.debug(
+                    f"Input image {image} has dimensions {image_input_dimensions}"
+                )
+                return 200, str(image_input_dimensions)
+    except rasterio.errors.RasterioIOError as e:
+        return 1001, f"Failed to open image {image}: {e}"
 
 
 def check_projection(file: Union[str, Path]) -> None:
