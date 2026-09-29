@@ -1,5 +1,9 @@
 site_name: TerraKit
 site_url: https://torchgeo.github.io/terrakit/
+exclude_docs: |
+  examples/tmp_download/
+  examples/.ipynb_checkpoints/
+  examples/test_*/
 nav:
   - Get Started:
     - TerraKit: index.md
