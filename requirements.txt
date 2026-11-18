@@ -31,7 +31,7 @@ dataclasses-json==0.6.7
 donfig==0.8.1.post1
 duckdb==1.5.4
 ecmwf-datastores-client==0.5.1
-filelock==3.29.1
+filelock==4.2.1
 folium==0.20.0
 fonttools==4.63.0
 frozenlist==1.8.0
