@@ -35,7 +35,7 @@ filelock==4.2.1
 folium==0.20.0
 fonttools==4.63.0
 frozenlist==1.8.0
-fsspec==2026.4.0
+fsspec==2026.6.0
 geographiclib==2.1
 geojson==3.3.0
 geopandas==1.1.3
