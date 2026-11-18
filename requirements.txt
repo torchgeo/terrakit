@@ -62,7 +62,7 @@ marshmallow==3.26.2
 matplotlib==3.10.9
 mdurl==0.1.2
 mercantile==1.2.1
-multidict==6.7.1
+multidict==6.9.1
 multiurl==0.3.7
 mypy-extensions==1.1.0
 narwhals==2.22.1
