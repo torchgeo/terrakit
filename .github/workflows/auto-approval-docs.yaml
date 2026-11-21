@@ -1,0 +1,34 @@
+# © Copyright IBM Corporation 2026
+# SPDX-License-Identifier: Apache-2.0
+
+name: Auto Approve Docs
+on: pull_request
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  auto-approve:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.draft == false &&
+      contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'), github.event.pull_request.author_association) &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v47
+        with:
+          files_ignore: |
+            **/*.md
+
+      - name: Approve PR
+        if: steps.changed-files.outputs.any_changed == 'false'
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
